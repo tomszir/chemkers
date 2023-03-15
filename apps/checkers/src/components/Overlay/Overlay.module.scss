@@ -1,0 +1,18 @@
+@import '../../styles/colors.scss';
+
+.overlay {
+  z-index: 9999;
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlayCard {
+  background-color: $background-color;
+  min-width: min(768px, 100%);
+  border-radius: 16px;
+  padding: 16px;
+}

@@ -1,0 +1,130 @@
+@import '../../styles/colors.scss';
+
+@mixin piece-color($color) {
+  background: radial-gradient(
+      ellipse at center,
+      $color 30%,
+      rgba(0, 0, 0, 0.2) 45%,
+      $color 47.5%,
+      rgba(0, 0, 0, 0.2) 80%,
+      $color 100%
+    ),
+    $color;
+}
+
+.square {
+  aspect-ratio: 1;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $square-main-color;
+
+  @for $row from 0 through 7 {
+    @for $column from 1 through 8 {
+      &:nth-child(#{$row * 8 + $column}) {
+        @if $row % 2 == 0 {
+          @if $column % 2 == 0 {
+            background-color: $square-secondary-color;
+          }
+        } @else {
+          @if $column % 2 == 1 {
+            background-color: $square-secondary-color;
+          }
+        }
+      }
+    }
+  }
+}
+
+.squareFilled {
+  cursor: pointer;
+}
+
+.squareMoveable {
+  $size: min(1.125rem, 30%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: $size;
+    height: $size;
+    display: block;
+    background-color: $square-main-color;
+    border-radius: 100%;
+    opacity: 0.8;
+    transition: all 0.1s ease;
+    animation: blink 2s infinite both;
+  }
+
+  &:hover {
+    &::after {
+      width: 1.35rem;
+      height: 1.35rem;
+    }
+  }
+}
+
+.squareIndex {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  font-size: 0.75rem;
+  color: #0a0e0d;
+  font-family: 'Arial', sans-serif;
+}
+
+.piece,
+.pieceBlack {
+  $size: 70%;
+
+  z-index: 99;
+  position: absolute;
+  width: $size;
+  height: $size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100%;
+  @include piece-color($piece-white-color);
+}
+
+.squareSelected {
+  &::after {
+    content: '';
+    display: block;
+    position: absolute;
+    inset: 0.25rem;
+    border: 0.25rem solid $square-main-color;
+    opacity: 0.8;
+    border-radius: 0.5rem;
+    animation: blink 2s infinite both;
+  }
+}
+
+.pieceKingIcon {
+  color: rgba(0, 0, 0, 0.35);
+  font-size: 2vh;
+}
+
+.pieceBlack {
+  @include piece-color($piece-black-color);
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
