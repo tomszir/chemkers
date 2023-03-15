@@ -8,11 +8,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
 }
 
 .overlayCard {
   background-color: $background-color;
-  min-width: min(768px, 100%);
+  min-width: min(568px, 100%);
   border-radius: 16px;
-  padding: 16px;
+  padding: 2rem;
 }

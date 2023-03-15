@@ -1,14 +1,18 @@
-import init, { Board, Color, CheckersAi } from 'wasm-checkers';
+import init, { Board, CheckersAi } from 'wasm-checkers';
 
 export const initWasm = async () => {
-  await init();
+  if (!import.meta.env.VITE_WASM_PATH) {
+    await init();
+  } else {
+    await init(import.meta.env.VITE_WASM_PATH);
+  }
 };
 
-export const getBestMove = (
+export const getBestMove = async (
   boardJson: string,
-  color: Color,
+  color: any,
   depth: number
-): string => {
+): Promise<string> => {
   const board = Board.from_json(boardJson);
   const bestMove = CheckersAi.get_best_move_alphabeta(board, color, depth);
   return bestMove.to_json();

@@ -1,6 +1,5 @@
 import { faCrown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Ref } from 'preact';
 import { Color, Move, Piece } from 'wasm-checkers';
 import style from './CheckersBoardSquare.module.scss';
 

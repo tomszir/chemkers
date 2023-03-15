@@ -45,6 +45,10 @@
 .squareMoveable {
   $size: min(1.125rem, 30%);
 
+  @media screen and (max-width: 768px) {
+    $size: 0.8rem;
+  }
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -67,6 +71,11 @@
     &::after {
       width: 1.35rem;
       height: 1.35rem;
+
+      @media screen and (max-width: 768px) {
+        width: 1rem;
+        height: 1rem;
+      }
     }
   }
 }
@@ -83,6 +92,10 @@
 .piece,
 .pieceBlack {
   $size: 70%;
+
+  @media screen and (max-width: 768px) {
+    $size: 65%;
+  }
 
   z-index: 99;
   position: absolute;
@@ -105,12 +118,25 @@
     opacity: 0.8;
     border-radius: 0.5rem;
     animation: blink 2s infinite both;
+
+    @media screen and (max-width: 768px) {
+      border-size: 0.15rem;
+      inset: 0.125rem;
+    }
   }
 }
 
 .pieceKingIcon {
   color: rgba(0, 0, 0, 0.35);
   font-size: 2vh;
+
+  @media screen and (max-width: 768px) {
+    font-size: 1.75vh;
+  }
+
+  @media screen and (max-width: 500px) {
+    font-size: 1.25vh;
+  }
 }
 
 .pieceBlack {

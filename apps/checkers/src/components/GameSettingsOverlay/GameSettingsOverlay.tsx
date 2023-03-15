@@ -36,13 +36,32 @@ function GameSettingsOverlay({
 
   return (
     <Overlay>
-      <button onClick={() => handlePlayerColorSelect(Color.White)}>
-        white
-      </button>
-      <button onClick={() => handlePlayerColorSelect(Color.Black)}>
-        black
-      </button>
+      <h3 className={style.heading}>Select your side</h3>
+      <h3 className={style.description}>
+        White always goes first - in case you forgot 😊
+      </h3>
+      <button
+        className={[
+          style.colorSelectButton,
+          playerColor === Color.White && style.colorSelectButtonSelected,
+        ].join(' ')}
+        onClick={() => handlePlayerColorSelect(Color.White)}
+      ></button>
+      <button
+        className={[
+          style.colorSelectButton,
+          style.colorSelectButtonBlack,
+          playerColor === Color.Black && style.colorSelectButtonSelected,
+        ].join(' ')}
+        onClick={() => handlePlayerColorSelect(Color.Black)}
+      ></button>
+      <h3 className={style.heading}></h3>
+      <h3 className={style.heading}>Select the difficulty</h3>
+      <h3 className={style.description}>
+        *The difficulty determines the AI's alpha-beta algorithm's search depth.
+      </h3>
       <input
+        className={style.difficultySlider}
         type="range"
         min={1}
         max={9}
@@ -52,8 +71,19 @@ function GameSettingsOverlay({
           setComputerDepth(parseInt(target?.value || 5));
         }}
       />
-      <div>{computerDepth}</div>
-      <button onClick={handleGameStart}>start game</button>
+      <div className={style.difficultySliderNumbers}>
+        {Array.from({ length: 9 }).map((_, i) => (
+          <span>{i + 1}</span>
+        ))}
+      </div>
+      <h3 className={style.heading}></h3>
+      <h3 className={style.heading}>Note</h3>
+      <h3 className={style.description}>
+        This is a work-in-progress (fuck you)
+      </h3>
+      <button className={style.startButton} onClick={handleGameStart}>
+        Start
+      </button>
     </Overlay>
   );
 }

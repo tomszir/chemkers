@@ -1,6 +1,7 @@
 {
   "private": true,
   "name": "react-checkers",
+  "homepage": "https://tomszir.github.io/chemkers",
   "version": "0.0.0",
   "author": "Toms Zvirbulis (tomszvirbulis3@gmail.com)",
   "description": "React front-end for a checkers board game.",
@@ -9,7 +10,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "jest"
+    "test": "jest",
+    "predeploy": "yarn build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.3.0",
@@ -23,6 +26,7 @@
   "devDependencies": {
     "@preact/preset-vite": "^2.5.0",
     "@types/jest": "^29.4.0",
+    "gh-pages": "^5.0.0",
     "jest": "^29.5.0",
     "sass": "^1.58.3",
     "ts-jest": "^29.0.5",
