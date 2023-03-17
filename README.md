@@ -64,6 +64,27 @@ A development server should open to something simliar to http://localhost:5173
 
 > Note: The port can change depending on if the port is already taken or not
 
+### Project structure
+
+This project uses [Turborepo](https://turbo.build/) for handling multiple interlinked codebases.
+
+```
+.
+├── .yarn                   # Yarn miscellanious files
+├── apps                    # Contains Turborepo apps
+│   └── preact-checkers     # The Preact front-end app
+├── packages                # Contains Turborepo packages
+│   └── wasm-checkers       # The Rust checkers logic core package
+├── .gitignore
+├── .prettierrc.json        # Prettier code-style configuration
+├── .yarnrc.yml             # Yarn configuration
+├── LICENSE
+├── package.json            # Node package configuration
+├── README.md
+├── turbo.json              # Turborepo configuration
+└── yarn.lock
+```
+
 ### Additional good-to-know things
 
 #### 1. Making `rust-analyzer` discover Rust sub-projects in VSCode
@@ -83,6 +104,19 @@ To make the VSCode `rust-analyzer` extension discover the `wasm-checkers` packag
 #### 2. Turborepo development server hangs the terminal
 
 When running `Ctrl + C` within a terminal with an active `yarn dev` development server running Turborepo sometimes doesn't gracefully shutdown and hangs the current active terminal session. To fix this I reccomend opening another terminal instance.
+
+## Acknowledgements and research sources
+
+This project wouldn't be possible without these online resources and articles.
+
+- [English draughts, by Wikipedia - The Free Encyclopedia](https://en.wikipedia.org/wiki/English_draughts)
+- [Minimax, by Wikipedia - The Free Encyclopedia](https://en.wikipedia.org/wiki/Minimax)
+- [Alpha-beta pruning, by Wikipedia - The Free Encyclopedia](https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning)
+- [Checkers Bitboard Tutorial, by Jonathan Kreuzer](https://3dkingdoms.com/checkers/bitboards.htm)
+- [Alpha-Beta Pruning and Checkers, By Dave Evans and Carl Sable](http://www.cs.columbia.edu/~devans/TIC/AB.html)
+- [Solving Checkers, by J. Schaeffer, Y. Bjornsson, N. Burch, A. Kishimoto, M. Muller, R. Lake, P. Lu and S. Sutphe](https://webdocs.cs.ualberta.ca/~mmueller/ps/ijcai05checkers.pdf)
+- [How to play checkers and win 90% of the time. Win with 13 basic strategies and secrets., by WinningCheckers](https://www.youtube.com/watch?v=q3aAsoM6HO0)
+- [How to use Web Workers with React and Vite, by Francisco Mendes](https://dev.to/franciscomendes10866/how-to-use-service-workers-with-react-17p2)
 
 ## License
 
