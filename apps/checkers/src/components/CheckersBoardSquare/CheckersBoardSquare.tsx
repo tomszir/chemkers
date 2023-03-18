@@ -6,8 +6,9 @@ import style from './CheckersBoardSquare.module.scss';
 const DEBUG_SQUARE_INDEXES = false;
 
 interface CheckersBoardSquareProps {
-  piece: Piece;
+  piece: Piece | undefined;
   index: number;
+  highlighted: boolean;
   selected: boolean;
   selectedMoves: Move[];
   onMove: (move: Move) => void;
@@ -18,13 +19,14 @@ interface CheckersBoardSquareProps {
 function CheckersBoardSquare({
   piece,
   index,
+  highlighted,
   selected,
   selectedMoves,
   onMove,
   onSelect,
   onClearSelect,
 }: CheckersBoardSquareProps) {
-  if (piece.color === Color.Empty) {
+  if (piece == null) {
     const selectedMove = selectedMoves.find(
       (move) => move.end_square === index
     );
@@ -32,6 +34,7 @@ function CheckersBoardSquare({
     const squareClassName = [
       style.square,
       selectedMove ? style.squareMoveable : '',
+      highlighted ? style.squareHighlighted : '',
     ].join(' ');
 
     const handleEmptySquareClick = () => {
@@ -55,18 +58,19 @@ function CheckersBoardSquare({
     style.square,
     style.squareFilled,
     selected ? style.squareSelected : '',
+    highlighted ? style.squareHighlighted : '',
   ].join(' ');
 
   const pieceClassName = [
     style.piece,
     piece.color === Color.Black ? style.pieceBlack : '',
-    piece.is_king ? style.pieceKing : '',
+    piece.king ? style.pieceKing : '',
   ].join(' ');
 
   return (
     <div className={squareClassName} onClick={() => onSelect(index)}>
       <div className={pieceClassName}>
-        {piece.is_king && (
+        {piece.king && (
           <FontAwesomeIcon className={style.pieceKingIcon} icon={faCrown} />
         )}
       </div>

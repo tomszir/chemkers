@@ -14,7 +14,7 @@
   "main": "pkg/wasm_checkers.js",
   "types": "pkg/wasm_checkers.d.ts",
   "scripts": {
-    "test": "",
+    "test": "cargo test",
     "dev": "cargo-watch -i .gitignore -i \"pkg/*\" -s \"yarn build\"",
     "build": "wasm-pack build --target web"
   }

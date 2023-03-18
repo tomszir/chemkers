@@ -1,5 +1,10 @@
 import { useState } from 'preact/hooks';
-import { Color } from 'wasm-checkers';
+import {
+  CheckersSetting,
+  CheckersSettingPreset,
+  CheckersSettings,
+  Color,
+} from 'wasm-checkers';
 import Overlay from '../Overlay';
 import style from './GameSettingsOverlay.module.scss';
 
@@ -7,6 +12,7 @@ export interface CheckersGameSettings {
   playerColor: Color;
   gameStarted: boolean;
   computerDepth: number;
+  checkersSettings: number;
 }
 
 export interface GameSettingsOverlayProps {
@@ -26,6 +32,9 @@ function GameSettingsOverlay({
       playerColor,
       computerDepth,
       gameStarted: true,
+      checkersSettings:
+        CheckersSettings.from_preset(CheckersSettingPreset.RussianVariation) |
+        CheckersSetting.ForcedCapture,
     });
   };
 

@@ -1,44 +1,147 @@
 use std::cmp;
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
 use crate::{
+    bitboard::Bitboard,
     board::Board,
-    constants::Color,
-    move_generation::{Move, MoveGeneration},
+    board_move::Move,
+    constants::{Color, MoveType},
+    log,
+    move_generation::MoveGenerator,
 };
 
 #[wasm_bindgen]
 pub struct CheckersAi;
 
+impl CheckersAi {
+    pub fn alphabeta(
+        bitboard: &Bitboard,
+        color: Color,
+        depth: u32,
+        settings: u16,
+        mut alpha: i16,
+        mut beta: i16,
+        forced_moves: Vec<Move>,
+    ) -> i16 {
+        if depth == 0 {
+            return Self::get_heuristic_value(&bitboard, settings);
+        }
+
+        let moves = if forced_moves.len() == 0 {
+            MoveGenerator::get_valid_moves(&bitboard, color, settings)
+        } else {
+            forced_moves
+        };
+
+        if matches!(color, Color::White) {
+            let mut best_value = i16::MIN;
+
+            for board_move in moves {
+                let mut bitboard_after_move = bitboard.clone();
+                bitboard_after_move.update_from_move(&board_move);
+                best_value = cmp::max(
+                    best_value,
+                    Self::alphabeta(
+                        &bitboard_after_move,
+                        if board_move.forced_moves.len() > 0 {
+                            color
+                        } else {
+                            Color::Black
+                        },
+                        depth - 1,
+                        settings,
+                        alpha,
+                        beta,
+                        board_move.forced_moves,
+                    ),
+                );
+
+                if best_value > beta {
+                    break;
+                }
+
+                alpha = cmp::max(alpha, best_value);
+            }
+
+            return best_value;
+        } else {
+            let mut best_value = i16::MAX;
+
+            for board_move in moves {
+                let mut bitboard_after_move = bitboard.clone();
+                bitboard_after_move.update_from_move(&board_move);
+                best_value = cmp::min(
+                    best_value,
+                    Self::alphabeta(
+                        &bitboard_after_move,
+                        if board_move.forced_moves.len() > 0 {
+                            color
+                        } else {
+                            Color::White
+                        },
+                        depth - 1,
+                        settings,
+                        alpha,
+                        beta,
+                        board_move.forced_moves,
+                    ),
+                );
+
+                if best_value < alpha {
+                    break;
+                }
+
+                beta = cmp::min(beta, best_value);
+            }
+
+            return best_value;
+        }
+    }
+}
+
 #[wasm_bindgen]
 impl CheckersAi {
     #[wasm_bindgen]
-    pub fn get_heuristic_value(board: &Board) -> i16 {
+    pub fn get_heuristic_value(bitboard: &Bitboard, settings: u16) -> i16 {
         let mut eval = 0_i16;
         let piece_value = 3;
         let king_value = 6;
 
-        for (square, piece) in (0..64).map(|i| (i, board.get_piece(i))) {
+        for (square, piece_option) in (0..64).map(|i| (i, bitboard.get_piece(i))) {
+            if piece_option.is_none() {
+                continue;
+            }
+
+            let piece = piece_option.unwrap();
             let score = piece.color.get_score_multiplier();
-            let attacking_moves = MoveGeneration::generate_attacking_moves_in_range(
-                board,
+            let attacking_moves = MoveGenerator::get_moves_for_square(
+                bitboard,
+                MoveType::Attack,
+                square,
                 piece.color,
-                square..square + 1,
+                settings,
             );
-            let protecting_moves =
-                MoveGeneration::generate_moves_in_range(board, piece.color, square..square + 1);
+            let protecting_moves = MoveGenerator::get_moves_for_square(
+                bitboard,
+                MoveType::Advance,
+                square,
+                piece.color,
+                settings,
+            );
 
             // Basic piece values
-            eval += match piece.is_king {
+            eval += match piece.king {
                 false => piece_value,
                 true => king_value,
             } * score;
 
             // Piece can attack other pieces
             for attacking_move in attacking_moves {
-                eval += match attacking_move.can_capture_again {
-                    false => piece_value,
-                    true => king_value,
+                eval += match attacking_move.captured_pieces.len() > 0 {
+                    true => piece_value,
+                    false => 0,
+                    // false => piece_value,
+                    // true => king_value,
                 } * score;
             }
 
@@ -105,129 +208,62 @@ impl CheckersAi {
     }
 
     #[wasm_bindgen]
-    pub fn alphabeta(
+    pub fn get_best_move_alphabeta(
         board: &Board,
-        color: Color,
+        color_to_move: Color,
         depth: u32,
-        mut alpha: i16,
-        mut beta: i16,
-    ) -> i16 {
-        if depth == 0 {
-            return Self::get_heuristic_value(&board);
+        settings: u16,
+        previous_move: Option<Move>,
+    ) -> Option<Move> {
+        let valid_moves = MoveGenerator::get_valid_moves(&board.bitboard, color_to_move, settings);
+        let moves: Vec<Move> = match previous_move {
+            Some(board_move) => {
+                if board_move.forced_moves.len() > 0 {
+                    board_move.forced_moves
+                } else {
+                    valid_moves
+                }
+            }
+            _ => valid_moves,
+        };
+
+        if moves.len() == 0 {
+            return None;
         }
 
-        let moves = MoveGeneration::generate_all_moves(&board, color);
-
-        if matches!(color, Color::White) {
-            let mut best_value = i16::MIN;
-
-            for board_move in moves {
-                let mut board_copy = board.clone();
-                board_copy.update_from_move(&board_move);
-                best_value = cmp::max(
-                    best_value,
-                    Self::alphabeta(
-                        &board_copy,
-                        if board_move.can_capture_again {
-                            color
-                        } else {
-                            Color::Black
-                        },
-                        depth - 1,
-                        alpha,
-                        beta,
-                    ),
-                );
-
-                if best_value > beta {
-                    break;
-                }
-
-                alpha = cmp::max(alpha, best_value);
-            }
-
-            return best_value;
-        } else {
-            let mut best_value = i16::MAX;
-
-            for board_move in moves {
-                let mut board_copy = board.clone();
-                board_copy.update_from_move(&board_move);
-                best_value = cmp::min(
-                    best_value,
-                    Self::alphabeta(
-                        &board_copy,
-                        if board_move.can_capture_again {
-                            color
-                        } else {
-                            Color::White
-                        },
-                        depth - 1,
-                        alpha,
-                        beta,
-                    ),
-                );
-
-                if best_value < alpha {
-                    break;
-                }
-
-                beta = cmp::min(beta, best_value);
-            }
-
-            return best_value;
-        }
-    }
-
-    #[wasm_bindgen]
-    pub fn get_best_move_alphabeta(board: &Board, color_to_move: Color, mut depth: u32) -> Move {
-        let mut moves = MoveGeneration::generate_all_moves(&board, color_to_move);
-
-        // What's the point of doing lookahead if you can only do one move
         if moves.len() == 1 {
-            return moves[0];
-        }
-
-        // Check if any move did a capture
-        if moves[0].did_capture {
-            let can_capture_again: Vec<_> = moves
-                .clone()
-                .into_iter()
-                .filter(|attacking_move| attacking_move.can_capture_again)
-                .collect();
-
-            if can_capture_again.len() > 0 {
-                moves = can_capture_again;
-                depth = 5;
-            }
+            return Some(moves[0].clone());
         }
 
         let pair: Vec<_> = moves
             .iter()
             .map(|board_move| {
-                let mut board_clone = board.clone();
-                board_clone.update_from_move(&board_move);
+                let mut board_after_move = board.bitboard.clone();
+                board_after_move.update_from_move(&board_move);
                 return (
                     board_move,
                     Self::alphabeta(
-                        &board_clone,
-                        color_to_move.get_opposite_color(),
+                        &board_after_move,
+                        color_to_move.get_opposite(),
                         depth - 1,
+                        settings,
                         i16::MIN,
                         i16::MAX,
+                        board_move.forced_moves.clone(),
                     ),
                 );
             })
             .collect();
+
         let best_pair = match color_to_move {
             Color::White => pair.iter().max_by_key(|(_, value)| value),
             Color::Black => pair.iter().min_by_key(|(_, value)| value),
-            Color::Empty => None,
+            _ => None,
         };
 
-        match best_pair {
-            Some((best_move, _)) => **best_move,
-            None => moves[0],
-        }
+        Some(match best_pair {
+            Some((best_move, _)) => (**best_move).clone(),
+            None => moves[0].clone(),
+        })
     }
 }

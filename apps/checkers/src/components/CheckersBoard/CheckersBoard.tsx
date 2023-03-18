@@ -1,12 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import {
-  Board,
-  CheckersAi,
-  Color,
-  Move,
-  MoveGeneration,
-  Piece,
-} from 'wasm-checkers';
+import { useEffect, useMemo, useState } from 'preact/hooks';
+import { Board, Color, Move, MoveGenerator, Piece } from 'wasm-checkers';
 import style from './CheckersBoard.module.scss';
 
 import CheckersBoardSquare from '../CheckersBoardSquare';
@@ -35,6 +28,7 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
   const [boardPieces, setBoardPieces] = useState<Piece[]>([]);
   const [selectedMoves, setSelectedMoves] = useState<Move[]>([]);
   const [selectedPieceIndex, setSelectedPieceIndex] = useState<number>(-1);
+  const [highlightedSquares, setHighlightedSquares] = useState<number[]>([]);
 
   useEffect(() => {
     resetBoard();
@@ -59,7 +53,7 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
   }, [gameSettings.playerColor]);
 
   useEffect(() => {
-    setScoreEvaluation(CheckersAi.get_heuristic_value(board));
+    setScoreEvaluation(0);
   }, [totalMoves]);
 
   useEffect(() => {
@@ -84,11 +78,17 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
   };
 
   const updatePlayerMoves = () => {
-    setMoves(MoveGeneration.generate_all_moves_js(board, playerColor));
+    setMoves(
+      MoveGenerator.get_valid_moves_js(
+        board,
+        playerColor,
+        gameSettings.checkersSettings
+      )
+    );
   };
 
   const checkAndHandleGameEnd = (): boolean => {
-    if (!board.is_game_over()) {
+    if (!board.is_game_over(gameSettings.checkersSettings)) {
       return false;
     }
 
@@ -116,19 +116,25 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
     setMoves([]);
     setSelectedMoves([]);
 
-    // Generate the list of all computer moves to do
     do {
-      const move = Move.from_json(
-        await wasmCheckersWorker.getBestMove(
-          board.to_json(),
-          opponentColor,
-          gameSettings.computerDepth
-        )
+      const previousMove = computerMoves.at(-1);
+      const moveJson = await wasmCheckersWorker.getBestMove(
+        board.to_json(),
+        opponentColor,
+        previousMove ? previousMove.to_json() : null,
+        gameSettings
       );
-      board.update_from_move(move);
+
+      if (!moveJson) {
+        return;
+      }
+
+      const move = Move.from_json(moveJson);
+
+      board.handle_move(move);
       computerMoves.push(move);
       computerMoveBoardPieces.push(getBoardPieces());
-    } while (computerMoves.at(-1)?.can_capture_again);
+    } while ((computerMoves.at(-1) as Move).get_forced_moves_js().length > 0);
 
     // Displays and blocks the game while displaying all queued computer moves
     await Promise.all(
@@ -138,10 +144,19 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
             setBoardPieces(boardPieces);
             setTotalMoves(totalMoves + 1);
             resolve();
-          }, 250 * (index + 1))
+          }, 400 * (index + 1))
         );
       })
     );
+
+    const highlighted: number[] = [];
+
+    computerMoves.forEach((move) => {
+      highlighted.push(move.start_square);
+      highlighted.push(move.end_square);
+    });
+
+    setHighlightedSquares(highlighted);
 
     if (checkAndHandleGameEnd()) {
       return;
@@ -151,7 +166,7 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
   };
 
   const handlePlayerMove = async (move: Move) => {
-    board.update_from_move(move);
+    board.handle_move(move);
     setBoardPieces(getBoardPieces());
     setTotalMoves(totalMoves + 1);
     setSelectedPieceIndex(-1);
@@ -160,7 +175,7 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
       return;
     }
 
-    if (!move.can_capture_again) {
+    if (move.get_forced_moves_js().length === 0) {
       handleComputerMove();
       return;
     }
@@ -180,6 +195,7 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
           piece={piece}
           index={squareIndex}
           selectedMoves={selectedMoves}
+          highlighted={highlightedSquares.includes(squareIndex)}
           selected={selectedPieceIndex === squareIndex}
           onMove={handlePlayerMove}
           onSelect={handleSelect}

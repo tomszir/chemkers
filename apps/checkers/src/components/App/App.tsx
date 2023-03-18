@@ -13,6 +13,7 @@ const defaultGameSettings: CheckersGameSettings = {
   playerColor: Color.White,
   computerDepth: 5,
   gameStarted: false,
+  checkersSettings: 0,
 };
 
 function App() {
@@ -53,7 +54,9 @@ function App() {
 
   return (
     <main className={style.main}>
-      <CheckersBoard gameSettings={gameSettings} onGameEnd={handleGameEnd} />
+      <div class={style.board}>
+        <CheckersBoard gameSettings={gameSettings} onGameEnd={handleGameEnd} />
+      </div>
       {!gameSettings.gameStarted && (
         <GameSettingsOverlay
           onGameStart={handleGameStart}

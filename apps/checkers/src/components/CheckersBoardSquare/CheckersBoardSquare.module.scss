@@ -1,4 +1,4 @@
-@import '../../styles/colors.scss';
+@import '../../styles/index.scss';
 
 @mixin piece-color($color) {
   background: radial-gradient(
@@ -43,11 +43,7 @@
 }
 
 .squareMoveable {
-  $size: min(1.125rem, 30%);
-
-  @media screen and (max-width: 768px) {
-    $size: 0.8rem;
-  }
+  $size: 25%;
 
   display: flex;
   align-items: center;
@@ -69,13 +65,8 @@
 
   &:hover {
     &::after {
-      width: 1.35rem;
-      height: 1.35rem;
-
-      @media screen and (max-width: 768px) {
-        width: 1rem;
-        height: 1rem;
-      }
+      width: calc($size * 1.25);
+      height: calc($size * 1.25);
     }
   }
 }
@@ -108,20 +99,37 @@
   @include piece-color($piece-white-color);
 }
 
+.squareHighlighted {
+  &::before {
+    inset: 0;
+    content: '';
+    z-index: 5;
+    position: absolute;
+    display: block;
+    opacity: 0.25;
+    background-color: turquoise !important;
+  }
+}
+
 .squareSelected {
   &::after {
     content: '';
     display: block;
     position: absolute;
-    inset: 0.25rem;
-    border: 0.25rem solid $square-main-color;
+    z-index: 10;
+    inset: 0.15rem;
+    border: 0.2rem solid $square-main-color;
     opacity: 0.8;
-    border-radius: 0.5rem;
     animation: blink 2s infinite both;
 
-    @media screen and (max-width: 768px) {
-      border-size: 0.15rem;
-      inset: 0.125rem;
+    @include screen-md() {
+      inset: 0.2rem;
+      border: 0.25rem solid $square-main-color;
+    }
+
+    @include screen-lg() {
+      inset: 0.25rem;
+      border: 0.3rem solid $square-main-color;
     }
   }
 }

@@ -1,7 +1,11 @@
 pub mod ai;
+pub mod bitboard;
 pub mod board;
+pub mod board_move;
 pub mod constants;
 pub mod move_generation;
+pub mod move_util;
+pub mod settings;
 pub mod util;
 
 use std::panic;
