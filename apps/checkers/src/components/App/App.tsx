@@ -1,68 +1,35 @@
-import init, { init_panic_hook, Color } from 'wasm-checkers';
-import { useEffect, useState } from 'preact/hooks';
-
 import style from './App.module.scss';
 import CheckersBoard from '../CheckersBoard';
 import GameSettingsOverlay from '../GameSettingsOverlay';
-import { CheckersGameSettings } from '../GameSettingsOverlay/GameSettingsOverlay';
 import { CheckersGameEndInfo } from '../CheckersBoard/CheckersBoard';
 import Overlay from '../Overlay';
-import { wasmCheckersWorker } from '../../web-workers';
-
-const defaultGameSettings: CheckersGameSettings = {
-  playerColor: Color.White,
-  computerDepth: 5,
-  gameStarted: false,
-  checkersSettings: 0,
-};
+import { useBoard, useBoardDispatch } from '../../context';
+import { initBoardAction } from '../../context/board-context/board-context-actions';
+import { useEffect, useState } from 'preact/hooks';
 
 function App() {
-  const [initialized, setInitialized] = useState(false);
-  const [gameSettings, setGameSettings] =
-    useState<CheckersGameSettings>(defaultGameSettings);
   const [gameEndInfo, setGameEndInfo] = useState<CheckersGameEndInfo | null>(
     null
   );
 
-  useEffect(() => {
-    init().then(async () => {
-      await wasmCheckersWorker.initWasm();
-      setInitialized(true);
-    });
-  }, []);
+  const { gameStarted, gameSettings } = useBoard();
+  const boardDispatch = useBoardDispatch();
 
   const handleNewGame = () => {
     setGameEndInfo(null);
-    setGameSettings(defaultGameSettings);
-  };
-
-  const handlePlayerColorSelect = (playerColor: Color) => {
-    setGameSettings(Object.assign({}, gameSettings, { playerColor }));
-  };
-
-  const handleGameStart = (settings: CheckersGameSettings) => {
-    setGameSettings(settings);
+    boardDispatch(initBoardAction());
   };
 
   const handleGameEnd = (gameEndInfo: CheckersGameEndInfo) => {
     setGameEndInfo(gameEndInfo);
   };
 
-  if (!initialized) {
-    return null;
-  }
-
   return (
     <main className={style.main}>
       <div class={style.board}>
-        <CheckersBoard gameSettings={gameSettings} onGameEnd={handleGameEnd} />
+        <CheckersBoard onGameEnd={handleGameEnd} />
       </div>
-      {!gameSettings.gameStarted && (
-        <GameSettingsOverlay
-          onGameStart={handleGameStart}
-          onPlayerColorSelect={handlePlayerColorSelect}
-        />
-      )}
+      {!gameStarted && <GameSettingsOverlay />}
       {gameEndInfo && (
         <Overlay>
           <h1>

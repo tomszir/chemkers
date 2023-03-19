@@ -3,7 +3,6 @@ use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
 use crate::{
     bitboard::Bitboard, board_move::Move, constants::Color, move_generation::MoveGenerator,
-    settings,
 };
 
 #[wasm_bindgen]

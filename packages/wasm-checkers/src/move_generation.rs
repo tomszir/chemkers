@@ -30,45 +30,53 @@ impl MoveGenerator {
         }
 
         let piece = bitboard.get_piece_by_color(color, square).unwrap();
-        let opposite_color = color.get_opposite();
         let move_diagonals = MoveUtil::get_move_diagonals(piece, move_type, settings);
 
         for diagonal in move_diagonals {
             let capture_end_squares = MoveUtil::get_capture_end_squares(
                 &bitboard, move_type, settings, piece, square, diagonal,
             );
+            let mut checked_captures: Vec<u16> = vec![];
 
-            for (captures, end) in capture_end_squares {
+            for (capture, end) in capture_end_squares.clone() {
                 if !MoveUtil::is_diagonal_within_bounds(move_type, diagonal, square) {
                     continue;
                 }
 
                 if bitboard.is_occupied(end) {
+                    match move_type {
+                        MoveType::Attack => {
+                            if bitboard.is_occupied(capture) {
+                                break;
+                            }
+                        }
+                        _ => {}
+                    }
+
                     continue;
                 }
 
-                let captured_pieces: Vec<(Piece, u16)> = match move_type {
+                if checked_captures.len() > 1 {
+                    break;
+                }
+
+                let captured_piece: Option<Piece> = match move_type {
                     MoveType::Attack => {
-                        let mut pieces = vec![];
-
-                        for capture in captures.clone() {
-                            if bitboard.is_color_occupied(opposite_color, capture) {
-                                match bitboard.get_piece(capture) {
-                                    Some(piece) => pieces.push((piece, capture)),
-                                    _ => {}
-                                }
-                            }
+                        match bitboard.is_color_occupied(color.get_opposite(), capture) {
+                            true => bitboard.get_piece(capture),
+                            _ => None,
                         }
-
-                        pieces
                     }
-                    _ => vec![],
+                    _ => None,
                 };
 
                 match move_type {
                     MoveType::Attack => {
-                        if captured_pieces.len() == 0 {
+                        if captured_piece.is_none() {
                             continue;
+                        }
+                        if !checked_captures.contains(&capture) {
+                            checked_captures.push(capture);
                         }
                     }
                     _ => {}
@@ -84,8 +92,11 @@ impl MoveGenerator {
                 bitboard_after_move.unset_square(piece, square);
                 bitboard_after_move.set_square(piece_after_move, end);
 
-                for (captured_piece, capture) in captured_pieces.clone().into_iter() {
-                    bitboard_after_move.unset_square(captured_piece, capture);
+                match move_type {
+                    MoveType::Attack => {
+                        bitboard_after_move.unset_square(captured_piece.unwrap(), capture);
+                    }
+                    _ => {}
                 }
 
                 let forced_moves = match move_type {
@@ -100,7 +111,7 @@ impl MoveGenerator {
                         } else {
                             Self::get_moves_for_square(
                                 &bitboard_after_move,
-                                move_type,
+                                MoveType::Attack,
                                 end,
                                 color,
                                 settings,
@@ -115,7 +126,7 @@ impl MoveGenerator {
                     end_square: end,
                     moved_piece: piece,
                     moved_piece_after_move: piece_after_move,
-                    captured_pieces,
+                    captured_piece,
                     forced_moves,
                     bitboard_after_move,
                 })
@@ -162,7 +173,7 @@ impl MoveGenerator {
             .concat()
             .into_iter()
             .filter(|m| {
-                if m.captured_pieces.len() > 0 {
+                if m.captured_piece.is_some() {
                     attack_move_squares.push((m.start_square, m.end_square));
                 } else {
                     if attack_move_squares.contains(&(m.start_square, m.end_square)) {

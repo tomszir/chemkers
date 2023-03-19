@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Color, Move, Piece } from 'wasm-checkers';
 import style from './CheckersBoardSquare.module.scss';
 
-const DEBUG_SQUARE_INDEXES = false;
+const DEBUG_SQUARE_INDEXES = import.meta.env.MODE === 'development';
 
 interface CheckersBoardSquareProps {
   piece: Piece | undefined;

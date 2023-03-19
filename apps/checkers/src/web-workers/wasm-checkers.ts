@@ -1,5 +1,5 @@
 import init, { Board, CheckersAi, Color, Move } from 'wasm-checkers';
-import { CheckersGameSettings } from '../components/GameSettingsOverlay/GameSettingsOverlay';
+import { CheckersGameSettings } from '../types';
 
 export const initWasm = async () => {
   if (!import.meta.env.VITE_WASM_PATH) {

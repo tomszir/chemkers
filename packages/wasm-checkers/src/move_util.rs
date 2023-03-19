@@ -104,49 +104,61 @@ impl MoveUtil {
         piece: Piece,
         square: u16,
         diagonal: i16,
-    ) -> Vec<(Vec<u16>, u16)> {
+    ) -> Vec<(u16, u16)> {
         if !CheckersSettings::contains(settings, CheckersSetting::FlyingKings) || !piece.king {
             return match move_type {
-                MoveType::Advance => vec![(vec![], (square as i16 + diagonal) as u16)],
+                MoveType::Advance => vec![(square, (square as i16 + diagonal) as u16)],
                 MoveType::Attack => vec![(
-                    vec![(square as i16 + diagonal) as u16],
+                    (square as i16 + diagonal) as u16,
                     (square as i16 + diagonal * 2) as u16,
                 )],
             };
         }
 
-        let mut captures: Vec<u16> = vec![];
-        let mut possible_moves: Vec<(Vec<u16>, u16)> = vec![];
-
-        let mut current_square = square as i16;
-        let mut previous_square: Option<u16> = None;
+        let mut possible_moves: Vec<(u16, u16)> = vec![];
+        let mut capture_squares: Vec<u16> = vec![];
+        let mut previous_square: u16 = square;
+        let mut end_square = square as i16;
 
         loop {
-            current_square += diagonal;
+            end_square += diagonal;
 
-            if !(0..64).contains(&current_square) {
+            if !(0..64).contains(&end_square) {
                 break;
             }
 
-            if bitboard.is_color_occupied(piece.color, current_square as u16) {
-                break;
+            match move_type {
+                MoveType::Advance => {
+                    if bitboard.is_occupied(end_square as u16) {
+                        break;
+                    }
+                }
+                _ => {}
             }
 
-            if previous_square.is_some() {
-                captures.push(previous_square.unwrap());
+            match move_type {
+                MoveType::Advance => possible_moves.push((square, end_square as u16)),
+                MoveType::Attack => {
+                    if previous_square != square {
+                        capture_squares.push(previous_square);
+
+                        for capture_square in capture_squares.clone() {
+                            possible_moves.push((capture_square, end_square as u16));
+                        }
+                    }
+                }
             }
 
-            possible_moves.push((captures.clone(), current_square as u16));
-            previous_square = Some(current_square as u16);
+            previous_square = end_square as u16;
 
             match diagonal {
                 MoveDiagonals::NORTH_WEST | MoveDiagonals::SOUTH_WEST => {
-                    if current_square % 8 == 7 {
+                    if end_square % 8 == 7 {
                         break;
                     }
                 }
                 MoveDiagonals::NORTH_EAST | MoveDiagonals::SOUTH_EAST => {
-                    if current_square % 8 == 0 {
+                    if end_square % 8 == 0 {
                         break;
                     }
                 }

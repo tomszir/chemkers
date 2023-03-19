@@ -9,8 +9,7 @@ use crate::{bitboard::Bitboard, constants::Piece};
 pub struct Move {
     pub start_square: u16,
     pub end_square: u16,
-    #[wasm_bindgen(skip)]
-    pub captured_pieces: Vec<(Piece, u16)>,
+    pub captured_piece: Option<Piece>,
     pub moved_piece: Piece,
     pub moved_piece_after_move: Piece,
     #[wasm_bindgen(skip)]

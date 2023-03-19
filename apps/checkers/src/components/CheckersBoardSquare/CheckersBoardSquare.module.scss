@@ -19,18 +19,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: $square-main-color;
+  background-color: map-get(map-get($themes, classic), square-main-color);
 
   @for $row from 0 through 7 {
     @for $column from 1 through 8 {
       &:nth-child(#{$row * 8 + $column}) {
         @if $row % 2 == 0 {
           @if $column % 2 == 0 {
-            background-color: $square-secondary-color;
+            background-color: map-get(
+              map-get($themes, classic),
+              square-secondary-color
+            );
           }
         } @else {
           @if $column % 2 == 1 {
-            background-color: $square-secondary-color;
+            background-color: map-get(
+              map-get($themes, classic),
+              square-secondary-color
+            );
           }
         }
       }
@@ -56,7 +62,7 @@
     width: $size;
     height: $size;
     display: block;
-    background-color: $square-main-color;
+    background-color: map-get(map-get($themes, classic), square-main-color);
     border-radius: 100%;
     opacity: 0.8;
     transition: all 0.1s ease;
@@ -73,11 +79,12 @@
 
 .squareIndex {
   position: absolute;
-  top: 0.25rem;
-  left: 0.25rem;
-  font-size: 0.75rem;
+  top: 0.3rem;
+  left: 0.3rem;
+  font-size: 0.5rem;
+  user-select: none;
   color: #0a0e0d;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Nunito', sans-serif;
 }
 
 .piece,
@@ -96,7 +103,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 100%;
-  @include piece-color($piece-white-color);
+  @include piece-color(map-get(map-get($themes, classic), piece-white-color));
 }
 
 .squareHighlighted {
@@ -118,18 +125,19 @@
     position: absolute;
     z-index: 10;
     inset: 0.15rem;
-    border: 0.2rem solid $square-main-color;
+    border: 0.2rem solid map-get(map-get($themes, classic), square-main-color);
     opacity: 0.8;
     animation: blink 2s infinite both;
 
     @include screen-md() {
       inset: 0.2rem;
-      border: 0.25rem solid $square-main-color;
+      border: 0.25rem solid
+        map-get(map-get($themes, classic), square-main-color);
     }
 
     @include screen-lg() {
       inset: 0.25rem;
-      border: 0.3rem solid $square-main-color;
+      border: 0.3rem solid map-get(map-get($themes, classic), square-main-color);
     }
   }
 }
@@ -148,7 +156,7 @@
 }
 
 .pieceBlack {
-  @include piece-color($piece-black-color);
+  @include piece-color(map-get(map-get($themes, classic), piece-black-color));
 }
 
 @keyframes blink {

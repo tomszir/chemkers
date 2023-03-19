@@ -1,7 +1,19 @@
 import { render } from 'preact';
-import App from './components/App';
+import init from 'wasm-checkers';
+import { wasmCheckersWorker } from './web-workers';
+
+await init();
+await wasmCheckersWorker.initWasm();
+
 import './styles/index.scss';
+import App from './components/App';
+import { BoardContextProvider } from './context';
 
 const rootElement = document.getElementById('root') as HTMLElement;
 
-render(<App />, rootElement);
+render(
+  <BoardContextProvider>
+    <App />
+  </BoardContextProvider>,
+  rootElement
+);

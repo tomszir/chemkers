@@ -1,10 +1,19 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import { Board, Color, Move, MoveGenerator, Piece } from 'wasm-checkers';
+import {
+  Board,
+  CheckersAi,
+  Color,
+  Move,
+  MoveGenerator,
+  Piece,
+} from 'wasm-checkers';
 import style from './CheckersBoard.module.scss';
 
 import CheckersBoardSquare from '../CheckersBoardSquare';
-import { CheckersGameSettings } from '../GameSettingsOverlay/GameSettingsOverlay';
 import { wasmCheckersWorker } from '../../web-workers';
+import { CheckersGameSettings } from '../../types';
+import { useBoard, useBoardDispatch } from '../../context';
+import * as boardActions from '../../context/board-context/board-context-actions';
 
 export interface CheckersGameEndInfo {
   tie: boolean;
@@ -13,115 +22,84 @@ export interface CheckersGameEndInfo {
 }
 
 export interface CheckersBoardProps {
-  gameSettings: CheckersGameSettings;
   onGameEnd: (gameEndInfo: CheckersGameEndInfo) => void;
 }
 
-function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
-  const { playerColor, gameStarted } = gameSettings;
-  const opponentColor = playerColor === Color.White ? Color.Black : Color.White;
+function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
+  const {
+    board,
+    playerMoves,
+    gameStarted,
+    moveHistory,
+    currentEvaluation,
+    currentTurn,
+    currentColorToMove,
+    gameSettings,
+  } = useBoard();
+  const boardDispatch = useBoardDispatch();
 
-  const board = useMemo(() => new Board(), []);
-  const [scoreEvaluation, setScoreEvaluation] = useState(0);
-  const [totalMoves, setTotalMoves] = useState<number>(0);
-  const [moves, setMoves] = useState<Move[]>([]);
   const [boardPieces, setBoardPieces] = useState<Piece[]>([]);
   const [selectedMoves, setSelectedMoves] = useState<Move[]>([]);
   const [selectedPieceIndex, setSelectedPieceIndex] = useState<number>(-1);
   const [highlightedSquares, setHighlightedSquares] = useState<number[]>([]);
 
   useEffect(() => {
-    resetBoard();
+    boardDispatch(boardActions.initBoardAction());
+    setBoardPieces(getBoardPieces());
   }, []);
 
   useEffect(() => {
     if (!gameStarted) {
-      resetBoard();
       return;
     }
 
-    if (playerColor === Color.White) {
-      updatePlayerMoves();
+    if (currentColorToMove == gameSettings.opponentColor) {
+      makeOpponentMove();
       return;
     }
 
-    handleComputerMove();
-  }, [gameSettings.gameStarted]);
+    boardDispatch(boardActions.updatePlayerMoves());
+  }, [gameStarted, currentColorToMove]);
 
   useEffect(() => {
     setBoardPieces(getBoardPieces());
-  }, [gameSettings.playerColor]);
-
-  useEffect(() => {
-    setScoreEvaluation(0);
-  }, [totalMoves]);
+  }, [gameSettings.playerColor, moveHistory]);
 
   useEffect(() => {
     setSelectedMoves(
-      moves.filter((move) => move.start_square === selectedPieceIndex)
+      playerMoves.filter((move) => move.start_square === selectedPieceIndex)
     );
-  }, [moves, selectedPieceIndex]);
+  }, [playerMoves, selectedPieceIndex]);
 
   const getBoardPieces = () => {
     const pieces = Array.from(board.get_pieces());
 
-    if (playerColor === Color.White) {
+    if (gameSettings.playerColor === Color.White) {
       return pieces.reverse();
     }
 
     return pieces;
   };
 
-  const resetBoard = () => {
-    board.init_default_state();
-    setBoardPieces(getBoardPieces());
-  };
-
-  const updatePlayerMoves = () => {
-    setMoves(
-      MoveGenerator.get_valid_moves_js(
-        board,
-        playerColor,
-        gameSettings.checkersSettings
-      )
-    );
-  };
-
-  const checkAndHandleGameEnd = (): boolean => {
-    if (!board.is_game_over(gameSettings.checkersSettings)) {
-      return false;
-    }
-
-    const tie = scoreEvaluation === 0;
-    const winner = scoreEvaluation > 0 ? Color.White : Color.Black;
-
-    onGameEnd({ tie, winner, totalMoves });
-
-    return true;
-  };
-
-  const handleClearSelect = () => {
+  const makePlayerMove = (move: Move) => {
     setSelectedMoves([]);
+    boardDispatch(boardActions.makeMove(move));
+    boardDispatch(boardActions.updatePlayerMoves());
+    boardDispatch(boardActions.advanceTurn());
+  };
+
+  const makeOpponentMove = async () => {
+    const moves: Move[] = [];
+
     setSelectedPieceIndex(-1);
-  };
 
-  const handleSelect = (index: number) => {
-    setSelectedPieceIndex(index);
-  };
-
-  const handleComputerMove = async () => {
-    const computerMoves: Move[] = [];
-    const computerMoveBoardPieces: Piece[][] = [];
-
-    setMoves([]);
-    setSelectedMoves([]);
-
-    do {
-      const previousMove = computerMoves.at(-1);
+    while (true) {
+      const previousMove = moves.at(-1);
+      const previousMoveJson = previousMove ? previousMove.to_json() : null;
       const moveJson = await wasmCheckersWorker.getBestMove(
         board.to_json(),
-        opponentColor,
-        previousMove ? previousMove.to_json() : null,
+        gameSettings.opponentColor,
+        previousMoveJson,
         gameSettings
       );
 
@@ -130,63 +108,53 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
       }
 
       const move = Move.from_json(moveJson);
+      const forcedMoves = move.get_forced_moves_js();
 
-      board.handle_move(move);
-      computerMoves.push(move);
-      computerMoveBoardPieces.push(getBoardPieces());
-    } while ((computerMoves.at(-1) as Move).get_forced_moves_js().length > 0);
+      moves.push(move);
 
-    // Displays and blocks the game while displaying all queued computer moves
+      if (forcedMoves.length == 0) {
+        break;
+      }
+    }
+
     await Promise.all(
-      computerMoveBoardPieces.map((boardPieces, index) => {
+      moves.map((move, index) => {
         return new Promise<void>((resolve) =>
           setTimeout(() => {
-            setBoardPieces(boardPieces);
-            setTotalMoves(totalMoves + 1);
+            boardDispatch(boardActions.makeMove(move));
             resolve();
           }, 400 * (index + 1))
         );
       })
     );
 
+    updateHighlightedSquared(moves);
+    boardDispatch(boardActions.advanceTurn());
+  };
+
+  const updateHighlightedSquared = (moves: Move[]) => {
     const highlighted: number[] = [];
 
-    computerMoves.forEach((move) => {
+    moves.forEach((move) => {
       highlighted.push(move.start_square);
       highlighted.push(move.end_square);
     });
 
     setHighlightedSquares(highlighted);
-
-    if (checkAndHandleGameEnd()) {
-      return;
-    }
-
-    updatePlayerMoves();
   };
 
-  const handlePlayerMove = async (move: Move) => {
-    board.handle_move(move);
-    setBoardPieces(getBoardPieces());
-    setTotalMoves(totalMoves + 1);
+  const handleSelect = (index: number) => {
+    setSelectedPieceIndex(index);
+  };
+
+  const handleClearSelect = () => {
+    setSelectedMoves([]);
     setSelectedPieceIndex(-1);
-
-    if (checkAndHandleGameEnd()) {
-      return;
-    }
-
-    if (move.get_forced_moves_js().length === 0) {
-      handleComputerMove();
-      return;
-    }
-
-    updatePlayerMoves();
-    setSelectedPieceIndex(move.end_square);
   };
 
   const mappedSquares = boardPieces.map((piece, pieceIndex) => {
     const squareIndex =
-      playerColor === Color.White ? 63 - pieceIndex : pieceIndex;
+      gameSettings.playerColor === Color.White ? 63 - pieceIndex : pieceIndex;
 
     return (
       <>
@@ -197,7 +165,7 @@ function CheckersBoard({ gameSettings, onGameEnd }: CheckersBoardProps) {
           selectedMoves={selectedMoves}
           highlighted={highlightedSquares.includes(squareIndex)}
           selected={selectedPieceIndex === squareIndex}
-          onMove={handlePlayerMove}
+          onMove={makePlayerMove}
           onSelect={handleSelect}
           onClearSelect={handleClearSelect}
         />

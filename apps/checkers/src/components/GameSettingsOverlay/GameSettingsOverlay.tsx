@@ -1,46 +1,37 @@
-import { useState } from 'preact/hooks';
-import {
-  CheckersSetting,
-  CheckersSettingPreset,
-  CheckersSettings,
-  Color,
-} from 'wasm-checkers';
+import { Color } from 'wasm-checkers';
+
+import { useBoard, useBoardDispatch } from '../../context';
+import * as boardActions from '../../context/board-context/board-context-actions';
+
 import Overlay from '../Overlay';
 import style from './GameSettingsOverlay.module.scss';
 
-export interface CheckersGameSettings {
-  playerColor: Color;
-  gameStarted: boolean;
-  computerDepth: number;
-  checkersSettings: number;
-}
-
-export interface GameSettingsOverlayProps {
-  onGameStart: (settings: CheckersGameSettings) => void;
-  onPlayerColorSelect: (playerColor: Color) => void;
-}
-
-function GameSettingsOverlay({
-  onGameStart,
-  onPlayerColorSelect,
-}: GameSettingsOverlayProps) {
-  const [playerColor, setPlayerColor] = useState<Color>(Color.White);
-  const [computerDepth, setComputerDepth] = useState<Color>(5);
+function GameSettingsOverlay() {
+  const { gameSettings } = useBoard();
+  const boardDispatch = useBoardDispatch();
 
   const handleGameStart = () => {
-    onGameStart({
-      playerColor,
-      computerDepth,
-      gameStarted: true,
-      checkersSettings:
-        CheckersSettings.from_preset(CheckersSettingPreset.RussianVariation) |
-        CheckersSetting.ForcedCapture,
-    });
+    boardDispatch(boardActions.startGame());
   };
 
   const handlePlayerColorSelect = (color: Color) => {
-    setPlayerColor(color);
-    onPlayerColorSelect(color);
+    boardDispatch(
+      boardActions.updateGameSettings({
+        ...gameSettings,
+        playerColor: color,
+      })
+    );
+  };
+
+  const handleDepthSelect = (target: HTMLInputElement) => {
+    console.log(parseInt(target.value));
+
+    boardDispatch(
+      boardActions.updateGameSettings({
+        ...gameSettings,
+        computerDepth: parseInt(target.value),
+      })
+    );
   };
 
   return (
@@ -52,7 +43,8 @@ function GameSettingsOverlay({
       <button
         className={[
           style.colorSelectButton,
-          playerColor === Color.White && style.colorSelectButtonSelected,
+          gameSettings.playerColor === Color.White &&
+            style.colorSelectButtonSelected,
         ].join(' ')}
         onClick={() => handlePlayerColorSelect(Color.White)}
       ></button>
@@ -60,7 +52,8 @@ function GameSettingsOverlay({
         className={[
           style.colorSelectButton,
           style.colorSelectButtonBlack,
-          playerColor === Color.Black && style.colorSelectButtonSelected,
+          gameSettings.playerColor === Color.Black &&
+            style.colorSelectButtonSelected,
         ].join(' ')}
         onClick={() => handlePlayerColorSelect(Color.Black)}
       ></button>
@@ -74,11 +67,8 @@ function GameSettingsOverlay({
         type="range"
         min={1}
         max={9}
-        value={computerDepth}
-        onChange={({ target }) => {
-          // @ts-ignore
-          setComputerDepth(parseInt(target?.value || 5));
-        }}
+        value={gameSettings.computerDepth}
+        onChange={({ target }) => handleDepthSelect(target as HTMLInputElement)}
       />
       <div className={style.difficultySliderNumbers}>
         {Array.from({ length: 9 }).map((_, i) => (
