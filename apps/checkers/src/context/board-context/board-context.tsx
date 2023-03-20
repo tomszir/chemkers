@@ -22,7 +22,7 @@ export const getInitialBoardState: () => BoardContextState = () => ({
     opponentColor: Color.Black,
     computerDepth: 5,
     checkersSettings: CheckersSettings.from_preset(
-      CheckersSettingPreset.EnglishVariation
+      CheckersSettingPreset.RussianVariation
     ),
   },
 });

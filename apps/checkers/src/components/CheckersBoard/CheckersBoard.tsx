@@ -54,12 +54,14 @@ function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
     }
 
     if (currentColorToMove == gameSettings.opponentColor) {
+      setSelectedMoves([]);
+      setSelectedPieceIndex(-1);
       makeOpponentMove();
       return;
     }
 
     boardDispatch(boardActions.updatePlayerMoves());
-  }, [gameStarted, currentColorToMove]);
+  }, [gameStarted, currentColorToMove, moveHistory]);
 
   useEffect(() => {
     setBoardPieces(getBoardPieces());
@@ -83,64 +85,52 @@ function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
 
   const makePlayerMove = (move: Move) => {
     setSelectedMoves([]);
+    setSelectedPieceIndex(-1);
     boardDispatch(boardActions.makeMove(move));
     boardDispatch(boardActions.updatePlayerMoves());
     boardDispatch(boardActions.advanceTurn());
   };
 
   const makeOpponentMove = async () => {
-    const moves: Move[] = [];
+    const previousMove = moveHistory.at(-1);
+    const previousMoveData =
+      previousMove?.moved_piece.color === gameSettings.opponentColor
+        ? previousMove.to_json()
+        : null;
+    const startTime = Date.now();
+    const bestMoveData = await wasmCheckersWorker.getBestMove(
+      board.to_json(),
+      gameSettings.opponentColor,
+      previousMoveData,
+      gameSettings
+    );
+    const timeTaken = Date.now() - startTime;
 
-    setSelectedPieceIndex(-1);
-
-    while (true) {
-      const previousMove = moves.at(-1);
-      const previousMoveJson = previousMove ? previousMove.to_json() : null;
-      const moveJson = await wasmCheckersWorker.getBestMove(
-        board.to_json(),
-        gameSettings.opponentColor,
-        previousMoveJson,
-        gameSettings
+    if (!bestMoveData) {
+      throw new Error(
+        'Something went wrong with getting the best opponent move.'
       );
-
-      if (!moveJson) {
-        return;
-      }
-
-      const move = Move.from_json(moveJson);
-      const forcedMoves = move.get_forced_moves_js();
-
-      moves.push(move);
-
-      if (forcedMoves.length == 0) {
-        break;
-      }
     }
 
-    await Promise.all(
-      moves.map((move, index) => {
-        return new Promise<void>((resolve) =>
-          setTimeout(() => {
-            boardDispatch(boardActions.makeMove(move));
-            resolve();
-          }, 400 * (index + 1))
-        );
-      })
-    );
+    const bestMove = Move.from_json(bestMoveData);
 
-    updateHighlightedSquared(moves);
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, Math.max(0, 500 - timeTaken));
+    });
+
+    updateHighlightedSquares(bestMove);
+    boardDispatch(boardActions.makeMove(bestMove));
     boardDispatch(boardActions.advanceTurn());
   };
 
-  const updateHighlightedSquared = (moves: Move[]) => {
-    const highlighted: number[] = [];
-
-    moves.forEach((move) => {
-      highlighted.push(move.start_square);
-      highlighted.push(move.end_square);
-    });
-
-    setHighlightedSquares(highlighted);
+  const updateHighlightedSquares = (move: Move) => {
+    setHighlightedSquares([
+      ...highlightedSquares,
+      move.start_square,
+      move.end_square,
+    ]);
   };
 
   const handleSelect = (index: number) => {

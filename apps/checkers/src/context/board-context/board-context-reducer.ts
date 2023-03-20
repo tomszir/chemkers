@@ -23,7 +23,6 @@ export const boardContextReducer = (
       const gameSettings = payload;
       const opponentColor =
         gameSettings.playerColor == Color.White ? Color.Black : Color.White;
-
       return { ...state, gameSettings: { ...gameSettings, opponentColor } };
     }
     case BoardContextActionType.UPDATE_PLAYER_MOVES: {
@@ -46,15 +45,18 @@ export const boardContextReducer = (
     }
     case BoardContextActionType.MAKE_MOVE: {
       const move = payload;
+      const board = state.board;
+
+      board.handle_move(move);
+
       const currentEvaluation = CheckersAi.get_heuristic_value_js(
-        state.board,
+        board,
         state.gameSettings.checkersSettings
       );
 
-      state.board.handle_move(move);
-
       return {
         ...state,
+        board,
         currentEvaluation,
         moveHistory: [...state.moveHistory, move],
       };
@@ -64,7 +66,10 @@ export const boardContextReducer = (
       const lastMoveForcedMoves = lastMove?.get_forced_moves_js() || [];
 
       if (lastMoveForcedMoves.length > 0) {
-        return state;
+        return {
+          ...state,
+          moveHistory: [...state.moveHistory],
+        };
       }
 
       const currentColorToMove =
