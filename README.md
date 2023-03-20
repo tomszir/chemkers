@@ -1,6 +1,10 @@
 # Chemkers
 
-English draughts variation of checkers, built with Rust & Preact.
+A live version of the app can be found here: https://tomszir.github.io/chemkers
+
+## Description
+
+> TODO: Write a description
 
 ## Development & project setup
 
@@ -68,22 +72,12 @@ A development server should open to something simliar to http://localhost:5173
 
 This project uses [Turborepo](https://turbo.build/) for handling multiple interlinked codebases.
 
-```
-.
-├── .yarn                   # Yarn miscellanious files
-├── apps                    # Contains Turborepo apps
-│   └── preact-checkers     # The Preact front-end app
-├── packages                # Contains Turborepo packages
-│   └── wasm-checkers       # The Rust checkers logic core package
-├── .gitignore
-├── .prettierrc.json        # Prettier code-style configuration
-├── .yarnrc.yml             # Yarn configuration
-├── LICENSE
-├── package.json            # Node package configuration
-├── README.md
-├── turbo.json              # Turborepo configuration
-└── yarn.lock
-```
+#### Turborepo workspaces
+
+| Name                                       | Description                              | Type      |
+| ------------------------------------------ | ---------------------------------------- | --------- |
+| [preact-checkers](./apps/checkers/)        | Vite Preact front-end                    | `app`     |
+| [wasm-checkers](./packages/wasm-checkers/) | Rust WebAssembly checkers engine library | `package` |
 
 ### Additional good-to-know things
 
