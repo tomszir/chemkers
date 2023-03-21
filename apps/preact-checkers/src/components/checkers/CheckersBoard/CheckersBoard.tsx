@@ -10,19 +10,13 @@ import {
 import style from './CheckersBoard.module.scss';
 
 import CheckersBoardSquare from '../CheckersBoardSquare';
-import { wasmCheckersWorker } from '../../web-workers';
-import { CheckersGameSettings } from '../../types';
-import { useBoard, useBoardDispatch } from '../../context';
-import * as boardActions from '../../context/board-context/board-context-actions';
-
-export interface CheckersGameEndInfo {
-  tie: boolean;
-  winner: Color;
-  totalMoves: number;
-}
+import { wasmCheckersWorker } from '../../../web-workers';
+import { CheckersGameSettings } from '../../../types';
+import { useBoard, useBoardDispatch } from '../../../context';
+import * as boardActions from '../../../context/board-context/board-context-actions';
 
 export interface CheckersBoardProps {
-  onGameEnd: (gameEndInfo: CheckersGameEndInfo) => void;
+  onGameEnd: () => void;
 }
 
 function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
@@ -31,8 +25,7 @@ function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
     playerMoves,
     gameStarted,
     moveHistory,
-    currentEvaluation,
-    currentTurn,
+    moveUpdate,
     currentColorToMove,
     gameSettings,
   } = useBoard();
@@ -54,23 +47,33 @@ function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
     }
 
     if (currentColorToMove == gameSettings.opponentColor) {
-      setSelectedMoves([]);
-      setSelectedPieceIndex(-1);
       makeOpponentMove();
       return;
     }
+  }, [gameStarted, currentColorToMove, moveUpdate]);
 
+  useEffect(() => {
     boardDispatch(boardActions.updatePlayerMoves());
-  }, [gameStarted, currentColorToMove, moveHistory]);
-
-  useEffect(() => {
     setBoardPieces(getBoardPieces());
-  }, [gameSettings.playerColor, moveHistory]);
+  }, [gameStarted, moveHistory]);
 
   useEffect(() => {
-    setSelectedMoves(
-      playerMoves.filter((move) => move.start_square === selectedPieceIndex)
-    );
+    setHighlightedSquares([]);
+  }, [gameStarted]);
+
+  useEffect(() => {
+    setHighlightedSquares([]);
+    setBoardPieces(getBoardPieces());
+  }, []);
+
+  useEffect(() => {
+    if (currentColorToMove === gameSettings.playerColor) {
+      setSelectedMoves(
+        playerMoves.filter((move) => move.start_square === selectedPieceIndex)
+      );
+    } else {
+      setSelectedMoves([]);
+    }
   }, [playerMoves, selectedPieceIndex]);
 
   const getBoardPieces = () => {
@@ -83,15 +86,43 @@ function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
     return pieces;
   };
 
+  const checkAndEndGame = () => {
+    if (!board.is_game_over(gameSettings.checkersSettings)) {
+      return;
+    }
+
+    if (
+      currentColorToMove === gameSettings.opponentColor &&
+      MoveGenerator.get_valid_moves_js(
+        board,
+        gameSettings.opponentColor,
+        gameSettings.checkersSettings
+      ).length > 0 &&
+      board
+        .get_pieces()
+        .find((piece) => piece?.color === gameSettings.playerColor)
+    ) {
+      return;
+    }
+
+    onGameEnd();
+    boardDispatch(boardActions.endGame());
+  };
+
   const makePlayerMove = (move: Move) => {
+    setHighlightedSquares([]);
     setSelectedMoves([]);
-    setSelectedPieceIndex(-1);
+
+    setSelectedPieceIndex(move.end_square);
+
     boardDispatch(boardActions.makeMove(move));
     boardDispatch(boardActions.updatePlayerMoves());
-    boardDispatch(boardActions.advanceTurn());
+    checkAndEndGame();
   };
 
   const makeOpponentMove = async () => {
+    setSelectedMoves([]);
+
     const previousMove = moveHistory.at(-1);
     const previousMoveData =
       previousMove?.moved_piece.color === gameSettings.opponentColor
@@ -104,7 +135,6 @@ function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
       previousMoveData,
       gameSettings
     );
-    const timeTaken = Date.now() - startTime;
 
     if (!bestMoveData) {
       throw new Error(
@@ -113,24 +143,21 @@ function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
     }
 
     const bestMove = Move.from_json(bestMoveData);
+    const timeTaken = Date.now() - startTime;
 
     await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
-      }, Math.max(0, 500 - timeTaken));
+      }, Math.max(0, 450 - timeTaken));
     });
 
-    updateHighlightedSquares(bestMove);
-    boardDispatch(boardActions.makeMove(bestMove));
-    boardDispatch(boardActions.advanceTurn());
-  };
-
-  const updateHighlightedSquares = (move: Move) => {
     setHighlightedSquares([
       ...highlightedSquares,
-      move.start_square,
-      move.end_square,
+      bestMove.start_square,
+      bestMove.end_square,
     ]);
+    boardDispatch(boardActions.makeMove(bestMove));
+    checkAndEndGame();
   };
 
   const handleSelect = (index: number) => {

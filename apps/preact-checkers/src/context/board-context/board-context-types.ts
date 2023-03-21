@@ -9,6 +9,9 @@ export type BoardContextState = {
   currentColorToMove: Color;
   moveHistory: Move[];
   playerMoves: Move[];
+  startTime: Date;
+  endTime: Date;
+  moveUpdate: boolean;
   gameSettings: CheckersGameSettings;
 };
 
@@ -37,6 +40,11 @@ export type BoardContextStartGameAction = {
   payload: null;
 };
 
+export type BoardContextEndGameAction = {
+  type: BoardContextActionType.END_GAME;
+  payload: null;
+};
+
 export type BoardContextUpdatePlayerMovesAction = {
   type: BoardContextActionType.UPDATE_PLAYER_MOVES;
   payload: null;
@@ -55,6 +63,7 @@ export type BoardContextAdvanceTurnAction = {
 export type BoardContextAction =
   | BoardContextInitBoardAction
   | BoardContextStartGameAction
+  | BoardContextEndGameAction
   | BoardContextUpdateGameSettingsAction
   | BoardContextUpdatePlayerMovesAction
   | BoardContextMakeMoveAction

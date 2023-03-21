@@ -1,5 +1,6 @@
 import {
   BoardContextAdvanceTurnAction,
+  BoardContextEndGameAction,
   BoardContextMakeMoveAction,
   BoardContextStartGameAction,
   BoardContextUpdateGameSettingsAction,
@@ -17,6 +18,13 @@ export const initBoardAction = (): BoardContextInitBoardAction => {
 export const startGame = (): BoardContextStartGameAction => {
   return {
     type: BoardContextActionType.START_GAME,
+    payload: null,
+  };
+};
+
+export const endGame = (): BoardContextEndGameAction => {
+  return {
+    type: BoardContextActionType.END_GAME,
     payload: null,
   };
 };

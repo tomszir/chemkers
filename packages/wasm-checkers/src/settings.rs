@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
-use crate::util::BitUtil;
+use crate::{log, util::BitUtil};
 
 #[repr(u16)]
 #[wasm_bindgen]

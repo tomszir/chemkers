@@ -4317,9 +4317,9 @@ prettier@latest:
   languageName: node
   linkType: hard
 
-"react-checkers@workspace:apps/checkers":
+"react-checkers@workspace:apps/preact-checkers":
   version: 0.0.0-use.local
-  resolution: "react-checkers@workspace:apps/checkers"
+  resolution: "react-checkers@workspace:apps/preact-checkers"
   dependencies:
     "@fortawesome/fontawesome-svg-core": ^6.3.0
     "@fortawesome/free-solid-svg-icons": ^6.3.0

@@ -1,4 +1,4 @@
-@import '../../styles/index.scss';
+@import '../../../styles/index.scss';
 
 @mixin piece-color($color) {
   background: radial-gradient(
@@ -113,8 +113,8 @@
     z-index: 5;
     position: absolute;
     display: block;
-    opacity: 0.25;
-    background-color: turquoise !important;
+    opacity: 0.3;
+    background-color: aquamarine !important;
   }
 }
 

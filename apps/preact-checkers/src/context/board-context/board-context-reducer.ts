@@ -17,7 +17,10 @@ export const boardContextReducer = (
       return getInitialBoardState();
     }
     case BoardContextActionType.START_GAME: {
-      return { ...state, gameStarted: true };
+      return { ...state, startTime: new Date(), gameStarted: true };
+    }
+    case BoardContextActionType.END_GAME: {
+      return { ...state, endTime: new Date(), gameStarted: false };
     }
     case BoardContextActionType.UPDATE_GAME_SETTINGS: {
       const gameSettings = payload;
@@ -54,21 +57,11 @@ export const boardContextReducer = (
         state.gameSettings.checkersSettings
       );
 
-      return {
-        ...state,
-        board,
-        currentEvaluation,
-        moveHistory: [...state.moveHistory, move],
-      };
-    }
-    case BoardContextActionType.ADVANCE_TURN: {
-      const lastMove = state.moveHistory.at(-1);
-      const lastMoveForcedMoves = lastMove?.get_forced_moves_js() || [];
-
-      if (lastMoveForcedMoves.length > 0) {
+      if ((move.get_forced_moves_js() || []).length > 0) {
         return {
           ...state,
-          moveHistory: [...state.moveHistory],
+          moveUpdate: !state.moveUpdate,
+          moveHistory: [...state.moveHistory, move],
         };
       }
 
@@ -76,7 +69,15 @@ export const boardContextReducer = (
         state.currentColorToMove == Color.White ? Color.Black : Color.White;
       const currentTurn = state.currentTurn + 1;
 
-      return { ...state, currentTurn, currentColorToMove };
+      return {
+        ...state,
+        board,
+        currentEvaluation,
+        currentTurn,
+        currentColorToMove,
+        moveUpdate: !state.moveUpdate,
+        moveHistory: [...state.moveHistory, move],
+      };
     }
     default: {
       throw new Error('Invalid board reducer action provided.');

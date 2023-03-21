@@ -6,7 +6,7 @@ await init();
 await wasmCheckersWorker.initWasm();
 
 import './styles/index.scss';
-import App from './components/App';
+import App from './components/core/App';
 import { BoardContextProvider } from './context';
 
 const rootElement = document.getElementById('root') as HTMLElement;

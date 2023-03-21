@@ -17,10 +17,13 @@ export const getInitialBoardState: () => BoardContextState = () => ({
   currentTurn: 0,
   currentEvaluation: 0,
   currentColorToMove: Color.White,
+  startTime: new Date(),
+  endTime: new Date(),
+  moveUpdate: false,
   gameSettings: {
     playerColor: Color.White,
     opponentColor: Color.Black,
-    computerDepth: 5,
+    computerDepth: 3,
     checkersSettings: CheckersSettings.from_preset(
       CheckersSettingPreset.RussianVariation
     ),

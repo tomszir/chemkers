@@ -1,0 +1,51 @@
+@import '../../styles/index.scss';
+
+.closeButton {
+  font-family: 'Nunito', sans-serif;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: darken($background-color, 7.5%);
+  color: #fff;
+  &:hover {
+    opacity: 0.8;
+  }
+  border: none;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.heading {
+  font-family: 'Nunito', sans-serif;
+  text-align: center;
+  color: #fff;
+  font-size: 2rem;
+}
+
+.description,
+.section {
+  font-family: 'Nunito', sans-serif;
+  color: #e3e3e3;
+}
+
+.section {
+  display: flex;
+}
+
+.sectionHeading {
+  flex: 1;
+}

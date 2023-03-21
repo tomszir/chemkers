@@ -15,8 +15,8 @@ pub struct CheckersAi;
 impl CheckersAi {
     pub fn get_heuristic_value(bitboard: &Bitboard, settings: u16) -> i16 {
         let mut eval = 0_i16;
-        let piece_value = 6;
-        let king_value = 12;
+        let piece_value = 8;
+        let king_value = 14;
 
         for (square, piece_option) in (0..64).map(|i| (i, bitboard.get_piece(i))) {
             if piece_option.is_none() {
@@ -85,14 +85,14 @@ impl CheckersAi {
             eval += match piece.color {
                 Color::White => {
                     if square == 1 || square == 5 {
-                        2
+                        1
                     } else {
                         0
                     }
                 }
                 Color::Black => {
                     if square == 62 || square == 58 {
-                        2
+                        1
                     } else {
                         0
                     }

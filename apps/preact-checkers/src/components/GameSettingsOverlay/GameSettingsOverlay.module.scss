@@ -1,0 +1,175 @@
+@import '../../styles/index.scss';
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.sectionDescription {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  color: #e3e3e3;
+  line-height: 1.25rem;
+}
+
+.sectionContent {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  color: #e3e3e3;
+  font-weight: 700;
+  font-family: 'Poppins', cursive;
+}
+
+.colorDescriptor {
+  text-align: center;
+  flex: 1;
+}
+
+.colorSelectButton {
+  opacity: 0.6;
+  flex: 1;
+  position: relative;
+  padding: 2rem;
+  border: 4px solid $background-color;
+  cursor: pointer;
+  background-color: #fff;
+  border-radius: 8px;
+}
+
+.colorSelectButtonBlack {
+  background-color: #000;
+}
+
+.colorSelectButtonRandom {
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: '';
+    background-color: #000;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    inset: 0;
+    position: absolute;
+  }
+}
+
+.colorSelectButtonSelected {
+  opacity: 1;
+  box-shadow: 0 0 0 3px #fff;
+}
+
+.settingsGrid {
+  display: grid;
+
+  @include screen-md() {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.settingsButton {
+  cursor: pointer;
+  text-align: left;
+  padding: 1rem 0;
+  padding-right: 1rem;
+  border-radius: 4px;
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background-color: transparent;
+  color: #e3e3e3;
+}
+
+.settingsButtonContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settingsButtonDescription {
+  font-size: 0.8rem;
+  color: #c3c3c3;
+}
+
+.settingButtonIcon {
+  font-size: 1.5rem;
+}
+
+.difficultySlider {
+  width: 100%;
+}
+
+.difficultySliderNumbers {
+  font-family: 'Nunito', sans-serif;
+  color: #e3e3e3;
+  font-size: 0.8rem;
+  display: flex;
+  margin-top: 6px;
+  gap: 0.25rem;
+}
+
+.difficultyGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.25rem;
+
+  @include screen-lg() {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.difficultyNumber {
+  cursor: pointer;
+  background-color: darken($background-color, 7.5%);
+  padding: 12px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  border: 2px solid $background-color;
+}
+
+.difficultyNumberSelected {
+  border: 2px solid #fff;
+}
+
+.startButton {
+  font-family: 'Nunito', sans-serif;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: darken($background-color, 7.5%);
+  color: #fff;
+  &:hover {
+    opacity: 0.8;
+  }
+  border: none;
+}
+
+.difficultySlider {
+  background-color: aqua;
+}
