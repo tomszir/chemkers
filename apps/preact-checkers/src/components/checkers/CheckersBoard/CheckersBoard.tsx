@@ -91,19 +91,7 @@ function CheckersBoard({ onGameEnd }: CheckersBoardProps) {
       return;
     }
 
-    if (
-      currentColorToMove === gameSettings.opponentColor &&
-      MoveGenerator.get_valid_moves_js(
-        board,
-        gameSettings.opponentColor,
-        gameSettings.checkersSettings
-      ).length > 0 &&
-      board
-        .get_pieces()
-        .find((piece) => piece?.color === gameSettings.playerColor)
-    ) {
-      return;
-    }
+    // TODO: Make opponent move
 
     onGameEnd();
     boardDispatch(boardActions.endGame());

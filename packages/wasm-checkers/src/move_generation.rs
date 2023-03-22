@@ -101,7 +101,8 @@ impl MoveGenerator {
 
                 let forced_moves = match move_type {
                     MoveType::Attack => {
-                        if did_promote
+                        if !piece.king
+                            && did_promote
                             && CheckersSettings::contains(
                                 settings,
                                 CheckersSetting::PromotionMoveTermination,
