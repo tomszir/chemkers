@@ -1,11 +1,11 @@
 import style from './App.module.scss';
 import CheckersBoard from '../../checkers/CheckersBoard';
-import GameSettingsOverlay from '../../GameSettingsOverlay';
+import GameSettingsOverlay from '../../overlays/GameSettingsOverlay';
 import Overlay from '../../ui/Overlay';
 import { useBoard, useBoardDispatch } from '../../../context';
 import { initBoardAction } from '../../../context/board-context/board-context-actions';
 import { useEffect, useState } from 'preact/hooks';
-import GameEndOverlay from '../../GameEndOverlay';
+import GameEndOverlay from '../../overlays/GameEndOverlay';
 
 function App() {
   const [gameEnded, setGameEnded] = useState(false);

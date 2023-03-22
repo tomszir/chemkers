@@ -6,10 +6,12 @@ use crate::{
 };
 
 #[wasm_bindgen]
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Board {
     #[wasm_bindgen(skip)]
     pub bitboard: Bitboard,
+    #[wasm_bindgen(skip)]
+    pub move_history: Vec<Move>,
 }
 
 #[wasm_bindgen]
@@ -18,6 +20,7 @@ impl Board {
     pub fn new() -> Self {
         let mut board = Board {
             bitboard: Bitboard::new(),
+            move_history: vec![],
         };
 
         board.init_default_state();
@@ -53,6 +56,12 @@ impl Board {
     #[wasm_bindgen]
     pub fn handle_move(&mut self, board_move: &Move) {
         self.bitboard.update_from_move(board_move);
+        self.move_history.push(board_move.clone());
+    }
+
+    #[wasm_bindgen]
+    pub fn get_winner(&self) -> Color {
+        Color::Empty
     }
 
     #[wasm_bindgen]

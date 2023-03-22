@@ -1,124 +1,14 @@
+use crate::{
+    bitboard::Bitboard, board::Board, board_move::Move, constants::Color,
+    heuristic::CheckersHeuristic, move_generation::MoveGenerator,
+};
 use std::cmp;
 use wasm_bindgen::prelude::wasm_bindgen;
-
-use crate::{
-    bitboard::Bitboard,
-    board::Board,
-    board_move::Move,
-    constants::{Color, MoveType},
-    move_generation::MoveGenerator,
-};
 
 #[wasm_bindgen]
 pub struct CheckersAi;
 
 impl CheckersAi {
-    pub fn get_heuristic_value(bitboard: &Bitboard, settings: u16) -> i16 {
-        let mut eval = 0_i16;
-        let piece_value = 8;
-        let king_value = 14;
-
-        for (square, piece_option) in (0..64).map(|i| (i, bitboard.get_piece(i))) {
-            if piece_option.is_none() {
-                continue;
-            }
-
-            let piece = piece_option.unwrap();
-            let score = piece.color.get_score_multiplier();
-            let attacking_moves = MoveGenerator::get_moves_for_square(
-                bitboard,
-                MoveType::Attack,
-                square,
-                piece.color,
-                settings,
-            );
-            let protecting_moves = MoveGenerator::get_moves_for_square(
-                bitboard,
-                MoveType::Advance,
-                square,
-                piece.color,
-                settings,
-            );
-
-            // Basic piece values
-            eval += match piece.king {
-                false => piece_value,
-                true => king_value,
-            } * score;
-
-            // Piece can attack other pieces
-            for attacking_move in attacking_moves {
-                eval += match attacking_move.captured_piece {
-                    Some(piece) => match piece.king {
-                        true => king_value,
-                        false => piece_value,
-                    },
-                    None => 0,
-                } * score;
-            }
-
-            // Add a point for each square a piece can move to
-            for _ in protecting_moves {
-                eval += 1 * score;
-            }
-
-            // Piece controls the center
-            eval += match piece.color {
-                Color::White => {
-                    if (17..22).contains(&square) {
-                        1
-                    } else {
-                        0
-                    }
-                }
-                Color::Black => {
-                    if (33..37).contains(&square) {
-                        1
-                    } else {
-                        0
-                    }
-                }
-                _ => 0,
-            } * score;
-
-            // Piece protects the king row
-            eval += match piece.color {
-                Color::White => {
-                    if square == 1 || square == 5 {
-                        1
-                    } else {
-                        0
-                    }
-                }
-                Color::Black => {
-                    if square == 62 || square == 58 {
-                        1
-                    } else {
-                        0
-                    }
-                }
-                _ => 0,
-            } * score;
-
-            // Piece is not a central piece (can only attack 1 square)
-            eval += if square == 8
-                || square == 24
-                || square == 40
-                || square == 56
-                || square == 7
-                || square == 23
-                || square == 39
-                || square == 55
-            {
-                0
-            } else {
-                1
-            } * score;
-        }
-
-        eval
-    }
-
     pub fn alphabeta(
         bitboard: &Bitboard,
         color: Color,
@@ -129,7 +19,7 @@ impl CheckersAi {
         forced_moves: Vec<Move>,
     ) -> i16 {
         if depth == 0 {
-            return Self::get_heuristic_value(&bitboard, settings);
+            return CheckersHeuristic::get_value_for_board(&bitboard, settings);
         }
 
         let moves = if forced_moves.len() == 0 {
@@ -208,7 +98,7 @@ impl CheckersAi {
 impl CheckersAi {
     #[wasm_bindgen]
     pub fn get_heuristic_value_js(board: &Board, settings: u16) -> i16 {
-        Self::get_heuristic_value(&board.bitboard, settings)
+        CheckersHeuristic::get_value_for_board(&board.bitboard, settings)
     }
 
     #[wasm_bindgen]

@@ -1,4 +1,4 @@
-@import '../../../styles/colors.scss';
+@import '../../../styles/index.scss';
 
 .overlay {
   z-index: 9999;
@@ -8,19 +8,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+
+  @include screen-md() {
+    padding: 1rem;
+  }
 }
 
 .overlayCard {
   overflow: hidden;
   background-color: $background-color;
-  max-width: min(568px, 100%);
   width: 100%;
   box-shadow: 0 4px 32px 8px rgba(0, 0, 0, 0.4);
-  border-radius: 8px;
   max-height: 100%;
   display: flex;
   flex-direction: column;
+
+  @include screen-md() {
+    max-width: min(568px, 100%);
+  }
 }
 
 .overlayCardContent {

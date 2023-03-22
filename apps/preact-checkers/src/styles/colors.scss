@@ -6,10 +6,8 @@ $themes: (
     piece-white-color: #eaeeed,
     piece-black-color: #4a4e4d,
   ),
-  black-and-white: (
-    square-main-color: #eeeed2,
-    square-secondary-color: #4a4e4d,
-    piece-white-color: #eaeeed,
-    piece-black-color: #cb9d58,
-  ),
 );
+
+@function get-theme-color($color) {
+  @return map-get(map-get($themes, classic), $color);
+}

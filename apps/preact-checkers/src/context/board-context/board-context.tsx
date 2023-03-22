@@ -23,7 +23,7 @@ export const getInitialBoardState: () => BoardContextState = () => ({
   gameSettings: {
     playerColor: Color.White,
     opponentColor: Color.Black,
-    computerDepth: 3,
+    computerDepth: 5,
     checkersSettings: CheckersSettings.from_preset(
       CheckersSettingPreset.RussianVariation
     ),

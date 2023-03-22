@@ -32,7 +32,7 @@ export type BoardContextInitBoardAction = {
 
 export type BoardContextUpdateGameSettingsAction = {
   type: BoardContextActionType.UPDATE_GAME_SETTINGS;
-  payload: CheckersGameSettings;
+  payload: Partial<CheckersGameSettings>;
 };
 
 export type BoardContextStartGameAction = {

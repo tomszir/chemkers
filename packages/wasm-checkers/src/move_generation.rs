@@ -38,7 +38,11 @@ impl MoveGenerator {
             );
             let mut checked_captures: Vec<u16> = vec![];
 
-            for (capture, end) in capture_end_squares.clone() {
+            for (capture, end) in capture_end_squares {
+                if checked_captures.len() > 1 {
+                    break;
+                }
+
                 if !MoveUtil::is_diagonal_within_bounds(move_type, diagonal, square) {
                     continue;
                 }
@@ -54,10 +58,6 @@ impl MoveGenerator {
                     }
 
                     continue;
-                }
-
-                if checked_captures.len() > 1 {
-                    break;
                 }
 
                 let captured_piece: Option<Piece> = match move_type {
@@ -82,7 +82,7 @@ impl MoveGenerator {
                     _ => {}
                 }
 
-                let did_promote = MoveUtil::is_color_on_promotion_square(color, end);
+                let did_promote = !piece.king && MoveUtil::is_color_on_promotion_square(color, end);
                 let mut bitboard_after_move = bitboard.clone();
                 let piece_after_move = Piece {
                     color,
@@ -101,8 +101,7 @@ impl MoveGenerator {
 
                 let forced_moves = match move_type {
                     MoveType::Attack => {
-                        if !piece.king
-                            && did_promote
+                        if did_promote
                             && CheckersSettings::contains(
                                 settings,
                                 CheckersSetting::PromotionMoveTermination,

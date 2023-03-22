@@ -1,7 +1,8 @@
 import { Color } from 'wasm-checkers';
-import { useBoard, useBoardDispatch } from '../../context';
+import { useBoard, useBoardDispatch } from '../../../context';
+import Button from '../../ui/Button';
 
-import Overlay from '../ui/Overlay';
+import Overlay from '../../ui/Overlay';
 import style from './GameEndOverlay.module.scss';
 
 function GameSettingsOverlay({ onClose }: { onClose: () => void }) {
@@ -10,13 +11,7 @@ function GameSettingsOverlay({ onClose }: { onClose: () => void }) {
   const winnerColor = currentEvaluation > 0 ? Color.White : Color.Black;
 
   return (
-    <Overlay
-      footerContent={
-        <button className={style.closeButton} onClick={onClose}>
-          Play Again
-        </button>
-      }
-    >
+    <Overlay footerContent={<Button onClick={onClose}>Play Again</Button>}>
       <div className={style.content}>
         <h1 className={style.heading}>
           {winnerColor === gameSettings.playerColor
@@ -32,7 +27,7 @@ function GameSettingsOverlay({ onClose }: { onClose: () => void }) {
           </div>
           <div className={style.section}>
             <div className={style.sectionHeading}>Turn Count</div>
-            {currentTurn}
+            {Math.ceil(currentTurn / 2)}
           </div>
           <div className={style.section}>
             <div className={style.sectionHeading}>Time Taken</div>

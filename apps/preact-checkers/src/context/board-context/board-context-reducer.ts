@@ -17,16 +17,30 @@ export const boardContextReducer = (
       return getInitialBoardState();
     }
     case BoardContextActionType.START_GAME: {
-      return { ...state, startTime: new Date(), gameStarted: true };
+      const playerColor =
+        state.gameSettings.playerColor === Color.Empty
+          ? Math.floor(Math.random() * 2 + 1)
+          : state.gameSettings.playerColor;
+      const opponentColor =
+        playerColor == Color.White ? Color.Black : Color.White;
+
+      return {
+        ...state,
+        startTime: new Date(),
+        gameStarted: true,
+        gameSettings: { ...state.gameSettings, playerColor, opponentColor },
+      };
     }
     case BoardContextActionType.END_GAME: {
       return { ...state, endTime: new Date(), gameStarted: false };
     }
     case BoardContextActionType.UPDATE_GAME_SETTINGS: {
       const gameSettings = payload;
-      const opponentColor =
-        gameSettings.playerColor == Color.White ? Color.Black : Color.White;
-      return { ...state, gameSettings: { ...gameSettings, opponentColor } };
+
+      return {
+        ...state,
+        gameSettings: { ...state.gameSettings, ...gameSettings },
+      };
     }
     case BoardContextActionType.UPDATE_PLAYER_MOVES: {
       const previousMove = state.moveHistory.reverse().find((move) => {

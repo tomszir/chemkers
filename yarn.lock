@@ -1905,6 +1905,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"classnames@npm:^2.3.2":
+  version: 2.3.2
+  resolution: "classnames@npm:2.3.2"
+  checksum: 2c62199789618d95545c872787137262e741f9db13328e216b093eea91c85ef2bfb152c1f9e63027204e2559a006a92eb74147d46c800a9f96297ae1d9f96f4e
+  languageName: node
+  linkType: hard
+
 "clean-stack@npm:^2.0.0":
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
@@ -4327,6 +4334,7 @@ prettier@latest:
     "@koale/useworker": ^4.0.2
     "@preact/preset-vite": ^2.5.0
     "@types/jest": ^29.4.0
+    classnames: ^2.3.2
     comlink: ^4.4.1
     gh-pages: ^5.0.0
     jest: ^29.5.0

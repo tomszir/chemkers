@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
-use crate::{log, util::BitUtil};
+use crate::util::BitUtil;
 
 #[repr(u16)]
 #[wasm_bindgen]
@@ -73,6 +73,11 @@ impl CheckersSettings {
     #[wasm_bindgen]
     pub fn combine_js(settings: JsValue) -> u16 {
         Self::combine(serde_wasm_bindgen::from_value(settings).unwrap_or(vec![]))
+    }
+
+    #[wasm_bindgen]
+    pub fn contains_js(settings: u16, setting: CheckersSetting) -> bool {
+        CheckersSettings::contains(settings, setting)
     }
 
     #[wasm_bindgen]
