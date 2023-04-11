@@ -72,7 +72,7 @@ impl CheckersHeuristic {
     pub fn get_value_for_board(bitboard: &Bitboard, settings: u16) -> i16 {
         let mut rng = rand::thread_rng();
         let mut value: i16 = 0;
-        let random_component: i16 = rng.gen_range(0..=3);
+        let random_component: i16 = rng.gen_range(-3..3);
 
         for (square, piece_option) in (0..64).map(|i| (i, bitboard.get_piece(i))) {
             value += match piece_option {
