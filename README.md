@@ -4,7 +4,7 @@ A live version of the app can be found here: https://tomszir.github.io/chemkers
 
 ## Description
 
-> TODO: Write a description
+A Checkers game made as a university project (but mostly for fun).
 
 ## Development & project setup
 
@@ -76,7 +76,7 @@ This project uses [Turborepo](https://turbo.build/) for handling multiple interl
 
 | Name                                       | Description                              | Type      |
 | ------------------------------------------ | ---------------------------------------- | --------- |
-| [preact-checkers](./apps/checkers/)        | Vite Preact front-end                    | `app`     |
+| [preact-checkers](./apps/preact-checkers/)        | Vite Preact front-end                    | `app`     |
 | [wasm-checkers](./packages/wasm-checkers/) | Rust WebAssembly checkers engine library | `package` |
 
 ### Additional good-to-know things
